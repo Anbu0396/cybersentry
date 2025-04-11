@@ -6,10 +6,10 @@ const path = require("path");
 const app = express();
 
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "Mark@396",
-    database: "password_manager"
+    host: "sql302.infinityfree.com",
+    user: "if0_38723641",
+    password: "Mark0396",
+    database: "if0_38723641_password_manager"
 });
 
 db.connect((err) => {
@@ -17,8 +17,45 @@ db.connect((err) => {
         console.error("Database connection failed:", err);
     } else {
         console.log("MySQL Connected");
+        createTablesIfNotExist();
     }
 });
+
+function createTablesIfNotExist() {
+    const createUsersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100),
+            username VARCHAR(100) UNIQUE,
+            gender VARCHAR(10),
+            email VARCHAR(100) UNIQUE,
+            phone VARCHAR(15),
+            dob DATE,
+            password TEXT
+        );
+    `;
+
+    const createPasswordsTable = `
+        CREATE TABLE IF NOT EXISTS passwords (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            website VARCHAR(255),
+            username VARCHAR(255),
+            password TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+        );
+    `;
+
+    db.query(createUsersTable, (err) => {
+        if (err) console.error("Error creating 'users' table:", err);
+        else console.log("'users' table ready ✅");
+    });
+
+    db.query(createPasswordsTable, (err) => {
+        if (err) console.error("Error creating 'passwords' table:", err);
+        else console.log("'passwords' table ready ✅");
+    });
+}
 
 app.use(express.static(path.join(__dirname, "Resources")));
 app.use(express.urlencoded({ extended: true }));
@@ -39,13 +76,11 @@ function isAuthenticated(req, res, next) {
 
 function xorEncryptDecrypt(input, key) {
     let output = '';
-    const  n= key.length;
-
+    const n = key.length;
     for (let i = 0; i < input.length; i++) {
         const encryptedChar = input.charCodeAt(i) ^ key.charCodeAt(i % n);
         output += String.fromCharCode(encryptedChar);
     }
-
     return output;
 }
 
@@ -59,137 +94,61 @@ function decrypt(pass, key) {
     return xorEncryptDecrypt(decoded, key);
 }
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "index.html"));
-});
+// Routes
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "html", "index.html")));
+app.get("/signup", (req, res) => res.sendFile(path.join(__dirname, "html", "signup.html")));
+app.get("/signin", (req, res) => res.sendFile(path.join(__dirname, "html", "signin.html")));
 
-app.get("/signup", (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "signup.html"));
-});
-
-app.post("/signup", async (req, res) => {
+app.post("/signup", (req, res) => {
     const { name, user, gender, email, phone, dob, pass } = req.body;
-
     const checkUser = "SELECT * FROM users WHERE username = ? OR email = ?";
-    db.query(checkUser, [user, email], async (err, results) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.json({ success: false, message: "Database error. Please try again." });
-        }
-        if (results.length > 0) {
-            return res.json({ success: false, message: "Username or Email already exists." });
-        }
+    db.query(checkUser, [user, email], (err, results) => {
+        if (err) return res.json({ success: false, message: "Database error." });
+        if (results.length > 0) return res.json({ success: false, message: "Username or Email already exists." });
 
         const sql = "INSERT INTO users (name, username, gender, email, phone, dob, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        db.query(sql, [name, user, gender, email, phone, dob, pass], (err, result) => {
-            if (err) {
-                console.error("Error inserting user:", err);
-                return res.json({ success: false, message: "Error creating account." });
-            }
-
+        db.query(sql, [name, user, gender, email, phone, dob, pass], (err) => {
+            if (err) return res.json({ success: false, message: "Error creating account." });
             res.json({ success: true, message: "Signup successful!", redirect: "/signin" });
         });
     });
 });
 
-app.get("/signin", (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "signin.html"));
-});
-
 app.post("/signin", (req, res) => {
     const { username, password } = req.body;
-
     const sql = "SELECT * FROM users WHERE username = ? OR email = ?";
     db.query(sql, [username, username], (err, results) => {
-        if (err) {
-            console.error("Error checking credentials:", err);
-            return res.json({ success: false, message: "Database error. Try again." });
-        }
-
-        if (results.length === 0) {
+        if (err) return res.json({ success: false, message: "Database error." });
+        if (results.length === 0 || results[0].password !== password)
             return res.json({ success: false, message: "Invalid credentials" });
-        }
 
-        const user = results[0];
-        if (password === user.password) {
-            req.session.user = user;
-            res.json({ success: true, message: "Login successful!", redirect: "/" });
-        } else {
-            return res.json({ success: false, message: "Invalid credentials" });
-        }
+        req.session.user = results[0];
+        res.json({ success: true, message: "Login successful!", redirect: "/" });
     });
 });
 
-app.get("/functions", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "functions.html"));
-});
-
-app.get("/user", (req, res) => {
-    if (req.session.user) {
-        res.json({ loggedIn: true, username: req.session.user.username });
-    } else {
-        res.json({ loggedIn: false });
-    }
-});
-
-app.get("/generator", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "generator.html"));
-});
-
-app.get("/checker", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "checker.html"));
-});
-
-app.get("/mypass", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "mypass.html"));
-});
-
-app.get("/new", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "new.html"));
-});
-
-app.get("/view", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "view.html"));
-});
-
-app.get("/edit", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "edit.html"));
-});
-
-app.get("/delete", isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, "html", "delete.html"));
-});
-
-app.get("/logout", (req, res) => {
-    req.session.destroy();
-    res.redirect("/");
-});
+app.get("/functions", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "functions.html")));
+app.get("/user", (req, res) => res.json({ loggedIn: !!req.session.user, username: req.session.user?.username }));
+app.get("/generator", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "generator.html")));
+app.get("/checker", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "checker.html")));
+app.get("/mypass", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "mypass.html")));
+app.get("/new", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "new.html")));
+app.get("/view", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "view.html")));
+app.get("/edit", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "edit.html")));
+app.get("/delete", isAuthenticated, (req, res) => res.sendFile(path.join(__dirname, "html", "delete.html")));
+app.get("/logout", (req, res) => { req.session.destroy(); res.redirect("/"); });
 
 app.post("/new", isAuthenticated, (req, res) => {
     const { website, user, password } = req.body;
     const user_id = req.session.user?.user_id;
     const userPassword = req.session.user?.password;
-
-    console.log("Received from form:", req.body);
-    console.log("Session user_id:", user_id);
-
-    if (!user_id || !website || !password || !userPassword) {
+    if (!user_id || !website || !password || !userPassword)
         return res.status(400).json({ success: false, message: "Missing required fields." });
-    }
 
     const encryptedPassword = encrypt(password, userPassword);
-
-    const insertSQL = `
-        INSERT INTO passwords (user_id, website, username, password)
-        VALUES (?, ?, ?, ?)
-    `;
-
-    db.query(insertSQL, [user_id, website, user, encryptedPassword], (err, result) => {
-        if (err) {
-            console.error("Error inserting password:", err);
-            return res.status(500).json({ success: false, message: "Failed to save password." });
-        }
-
+    const insertSQL = `INSERT INTO passwords (user_id, website, username, password) VALUES (?, ?, ?, ?)`;
+    db.query(insertSQL, [user_id, website, user, encryptedPassword], (err) => {
+        if (err) return res.status(500).json({ success: false, message: "Failed to save password." });
         res.json({ success: true, message: "Password saved successfully!", redirect: "/mypass" });
     });
 });
@@ -198,28 +157,17 @@ app.post("/view", isAuthenticated, (req, res) => {
     const { website } = req.body;
     const user_id = req.session.user.user_id;
     const userPassword = req.session.user.password;
-
-    if (!website) {
-        return res.status(400).send("Website name is required.");
-    }
+    if (!website) return res.status(400).send("Website name is required.");
 
     const sql = "SELECT website, username, password FROM passwords WHERE user_id = ? AND website = ?";
     db.query(sql, [user_id, website], (err, results) => {
-        if (err) {
-            console.error("Error fetching password:", err);
-            return res.status(500).send("Server error");
-        }
-
+        if (err) return res.status(500).send("Server error");
         if (results.length === 0) {
-            return res.send(`
-                <h2>No entry found for <i>${website}</i>.</h2>
-                <a href="/view">Try Again</a>
-            `);
+            return res.send(`<h2>No entry found for <i>${website}</i>.</h2><a href="/view">Try Again</a>`);
         }
 
         const { username, password } = results[0];
         const decryptedPassword = decrypt(password, userPassword);
-
         res.send(`
             <h2>Stored Credentials:</h2>
             <p><strong>Website:</strong> ${website}</p>
@@ -236,22 +184,11 @@ app.post("/edit", isAuthenticated, (req, res) => {
     const userPassword = req.session.user.password;
 
     const encryptedPassword = encrypt(password, userPassword);
-
-    const updateSQL = `
-        UPDATE passwords 
-        SET password = ? 
-        WHERE website = ? AND user_id = ?
-    `;
-
+    const updateSQL = `UPDATE passwords SET password = ? WHERE website = ? AND user_id = ?`;
     db.query(updateSQL, [encryptedPassword, website, user_id], (err, result) => {
-        if (err) {
-            console.error("Error updating password:", err);
-            return res.status(500).json({ success: false, message: "Failed to update password." });
-        }
-
-        if (result.affectedRows === 0) {
+        if (err) return res.status(500).json({ success: false, message: "Failed to update password." });
+        if (result.affectedRows === 0)
             return res.json({ success: false, message: "No matching record found to update." });
-        }
 
         res.json({ success: true, message: "Password updated successfully!" });
     });
@@ -260,22 +197,14 @@ app.post("/edit", isAuthenticated, (req, res) => {
 app.post("/delete", isAuthenticated, (req, res) => {
     const { website } = req.body;
     const user_id = req.session.user.user_id;
-
     const deleteSQL = "DELETE FROM passwords WHERE user_id = ? AND website = ?";
     db.query(deleteSQL, [user_id, website], (err, result) => {
-        if (err) {
-            console.error("Error deleting password:", err);
-            return res.status(500).json({ success: false, message: "Failed to delete password." });
-        }
-
-        if (result.affectedRows === 0) {
+        if (err) return res.status(500).json({ success: false, message: "Failed to delete password." });
+        if (result.affectedRows === 0)
             return res.json({ success: false, message: "No password found for the given website." });
-        }
 
         res.json({ success: true, message: "Password deleted successfully!" });
     });
 });
 
-app.listen(2025, () => {
-    console.log("SERVER RUNNING on http://localhost:2025");
-});
+app.listen(2025, () => console.log("SERVER RUNNING on http://localhost:2025"));
