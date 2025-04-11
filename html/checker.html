@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cybersentry</title>
+        <link rel="icon" href="\image\icon-png.png">
+        <link rel="stylesheet" href="\css\checker.css">
+        <script defer src="\js\checker.js"></script>
+    </head>
+    <body>
+        <a href="\functions"><div class="arrow"></div></a>
+        <div class="box">
+        <form id="check">
+            <center><h1>Password quality checker</h1></center>
+            <label for="password">Enter your Password</label><br>
+            <input type="text" id="password" name="password" placeholder="Input your password to assess its strength."><br>
+            <p id="valid"></p>
+            <button type="submit" id="checkButton">Check</button>
+            <h2 style="visibility: hidden;" id="info">your password quality:</h2>
+            <h1 id="quality"></h1>
+            <div class="input">
+                <ul>
+                    <li id="pc1">Password exceeds 8 characters</li>
+                    <li id="pc2">Password contains one digit</li>
+                    <li id="pc3">Password contains one small letter</li>
+                    <li id="pc4">Password contains one capital letter</li>
+                    <li id="pc5">Password contains one special character</li>
+                </ul>
+            </div>
+        </form>
+        </div>
+    </body>
+</html>

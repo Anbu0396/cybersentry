@@ -1,0 +1,287 @@
+body{
+    margin: 0%;
+    padding: 0%;
+    background-color: #f2f2f2;
+}
+
+h1{
+    text-align: center;
+    font-size:300%;
+    color: #000;
+}
+.box {
+    width: 75%;
+    margin: 10% auto 0;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .manager,
+  .generator,
+  .checker {
+    background-color: #ffffff;
+    border-radius: 10% 10% 4% 4%;
+    width: 28%;
+    padding: 20px 10px;
+    transition: 1s;
+    box-sizing: border-box;
+  }
+  
+  /* Hover Effects */
+  .manager:hover,
+  .generator:hover,
+  .checker:hover {
+    transform: scale(1.05);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
+  }
+  
+  /* Common Text Styling */
+  .manager h2,
+  .generator h2,
+  .checker h2 {
+    text-align: center;
+    font-size: 170%;
+    margin: 0;
+    margin-top: 8%;
+  }
+  
+  /* Common Button Styling */
+  .manager button,
+  .generator button,
+  .checker button {
+    width: 60%;
+    height: 12%;
+    margin-left: 20%;
+    padding: 4%;
+    color: aliceblue;
+    background-color: #15346e;
+    margin-top: 5%;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+                rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+                rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    transition: 0.2s;
+    font-size: 1rem;
+  }
+  
+  button:hover {
+    transform: scale(0.9);
+  }
+  
+  /* Images */
+  #mypass img,
+  #generator img,
+  #checker img {
+    display: block;
+    margin: 10% auto;
+    width: 50%;
+    filter: grayscale(0.2);
+  }
+  
+  /* Banner Image Section */
+  .pic {
+    background-image: url("/image/i5.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position-y: center;
+    height: 400px;
+    width: 80%;
+    margin: 1% auto;
+    border-radius: 2%;
+  }
+  
+  /* Tablet View */
+  @media screen and (max-width: 992px) {
+    .box {
+      width: 90%;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .manager,
+    .generator,
+    .checker {
+      width: 80%;
+      border-radius: 8% 8% 4% 4%;
+    }
+  
+    .manager h2,
+    .generator h2,
+    .checker h2 {
+      font-size: 180%;
+    }
+  
+    .manager button,
+    .generator button,
+    .checker button {
+      height: 40px;
+      font-size: 16px;
+    }
+  
+    #mypass img,
+    #generator img,
+    #checker img {
+      width: 60%;
+    }
+  }
+  
+  /* Phone View */
+  @media screen and (max-width: 600px) {
+    .manager,
+    .generator,
+    .checker {
+      width: 95%;
+      border-radius: 6% 6% 4% 4%;
+    }
+  
+    .manager h2,
+    .generator h2,
+    .checker h2 {
+      font-size: 160%;
+    }
+  
+    .manager button,
+    .generator button,
+    .checker button {
+      width: 70%;
+      margin-left: 15%;
+      font-size: 14px;
+    }
+  
+    #mypass img,
+    #generator img,
+    #checker img {
+      width: 70%;
+    }
+  }
+  
+.arrow {
+	width: 4vmin;
+	height: 4vmin;
+    color: #01050D;
+	box-sizing: border-box;
+	position:absolute;
+	margin-left: 4%;
+	margin-top: 3%;
+	transform: rotate(225deg);
+    z-index: 2;
+	
+	&:before {
+		content: '';
+		width: 100%;
+		height: 100%;
+		border-width: .8vmin .8vmin 0 0;
+		border-style: solid;
+		border-color: black;
+		transition: .5s ease;
+		display: block;
+		transform-origin: 100% 0;
+	}
+
+	&:after {
+		content: '';
+		float: left;
+		position: relative;
+		top: -100%;
+		width: 100%;
+		height: 100%;
+		border-width: 0 .8vmin 0 0;
+		border-style: solid;
+		border-color: black;
+		transform-origin: 100% 0;
+		transition:.5s ease;
+	}
+	
+	&:hover::after {
+		transform: rotate(45deg);
+		border-color: #f6b912;
+		height: 120%;
+	}
+	&:hover::before {
+		border-color: #f6b912;
+		transform: scale(.8);
+		
+	}	
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Russo+One&display=swap");
+
+.wrapper{
+    padding: 0;
+    margin: 0;
+    margin-bottom: 0;
+    background-color: #F2F2F2;
+    height: 100px;
+}
+
+svg {
+    margin-top:.5%;
+    padding: 0;
+	width: 100%; height: 100%;
+    font-family:'Times New Roman', Times, serif;
+    background-color: #f2f2f2;
+}
+svg text {
+	animation: stroke 5s;
+	stroke-width: 1;
+	font-size: 50px;
+    font-weight: 600;
+}
+@keyframes stroke {
+	0%   {
+		fill: rgba(0,0,0,0); stroke: rgba(54,95,160,1);
+		stroke-dashoffset: 25%; stroke-dasharray: 0 50%; stroke-width: 1;
+	}
+	70%  {fill: rgba(0,0,0,0); stroke: rgba(54,95,160,1); }
+	80%  {fill: rgba(0,0,0,0); stroke: rgba(54,95,160,1); stroke-width: 2; }
+	100% {
+		fill: rgba(0,0,0,1); stroke: rgba(54,95,160,0);
+		stroke-dashoffset: -25%; stroke-dasharray: 50% 0; stroke-width: 0;
+	}
+}
+
+.service-banner-container {
+    position: relative;
+    width: 80%;
+    margin: 0 auto;
+    margin-bottom: 10%;
+  }
+  
+  .pic {
+    background-image: url("/image/i5.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    width: 100%;
+    border-radius: 2%;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Move box into center of image */
+  .box {
+    position: absolute;
+    bottom: -300px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+    z-index: 2;
+  }
+  
+  /* Adjust responsive for new layout */
+  @media screen and (max-width: 992px) {
+    .box {
+      position: static;
+      transform: none;
+      margin-top: 20px;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  

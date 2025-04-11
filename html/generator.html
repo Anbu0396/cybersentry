@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cybersentry</title>
+        <link rel="icon" href="\image\icon-png.png">
+        <link rel="stylesheet" href="\css\generator.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </head>
+    <body>
+        <a href="\functions"><div class="arrow"></div></a>
+        <div class="container">
+        <div class="box">
+            <form id="keyForm">
+                <i><b><p>Password Generator</p>
+                    <h2>Customize your password</h2>
+                    <form id="sel">
+                        <div id="choice">
+                        <div class="checkbox-wrapper">
+                            <div class="round">
+                                <input type="checkbox" id="num">
+                               <label for="num" class="check-box"></label>
+                            </div>
+                        </div>
+                        <label>Include numbers</label>
+                    </div><br>
+                    <div id="choice">
+                        <div class="checkbox-wrapper">
+                            <div class="round">
+                                <input type="checkbox" id="small">
+                                <label for="small" class="check-box"></label>
+                            </div>
+                        </div>
+                        <label>Include Lowercase characters</label>
+                    </div><br>
+                    <div id="choice">
+                        <div class="checkbox-wrapper">
+                            <div class="round">
+                                <input type="checkbox" id="cap">
+                                <label for="cap" class="check-box"></label>
+                            </div>
+                        </div>
+                        <label>Include Uppercase characters</label>
+                    </div><br>
+                    <div id="choice"></div>
+                        <div class="checkbox-wrapper">
+                            <div class="round">
+                                <input type="checkbox" id="spe">
+                                <label for="spe" class="check-box"></label>
+                            </div>
+                        </div>
+                        <label>Include Special characters</label><br><br>
+                <i><b><label for="len">Password Length</label></b></i><br><br>
+                <input type="range" min="4" max="36" value="1" id="len" name="len" list="len" onchange="lv.value = this.value"><br>
+                <output id="lv">4</output>
+                <output>letters</output><br>
+                <input type="text" id="output" placeholder="Choose the type to initiate your password generation."><br>
+                <h1 id="quality"></h1>
+                <button type="submit">Create</button>
+            </form>          
+        </div>        
+        <script defer src="\js\generator.js"></script>
+    </body>
+</html>

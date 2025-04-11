@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cybersentry</title>
+    <link rel="icon" href="/image/icon-png.png">
+    <link rel="stylesheet" href="/css/signup.css">
+</head>
+<body>
+    <div class="box">
+        <h1>Sign Up</h1>
+        <p>Please fill this form to create your account.</p>
+        <form id="form" method="post" action="/signup">
+            <div class="input">
+                <label for="name"><b>Name</b></label>
+                <input id="name" type="text" placeholder="Enter Name" name="name" required oninput="checkName()">
+                <small></small>
+            </div>
+            <div class="input">
+                <label for="username"><b>Username</b></label>
+                <input id="user" type="text" placeholder="Enter Username" name="user" required oninput="checkUser()">
+                <small name="username"></small>
+            </div>
+            <div class="gender">
+                <b>Gender</b>
+                <label><input type="radio" name="gender" value="male" required>Male</label>
+                <label><input type="radio" name="gender" value="female">Female</label>
+            </div><br>
+            <div class="input">
+                <label for="email"><b>Email</b></label>
+                <input id="email" type="email" placeholder="Enter Email" name="email" required oninput="checkEmail()">
+                <small name="semail"></small>
+            </div>
+            <label for="phone"><b>Phone no</b></label>
+            <input id="phone" type="tel" placeholder="Enter Phone No" maxlength="10" name="phone" required><br>
+            <label for="dob"><b>Date of Birth</b></label>
+            <input id="dob" type="date" name="dob" required><br>
+            <div class="input">
+                <label for="password"><b>Master Password</b></label>
+                <input id="pass" type="password" placeholder="Enter Master Password" name="pass" required oninput="checkPassword()">
+                <small></small>
+            </div>
+            <div class="input">
+                <ul>
+                    <li id="pc1">Password must be 8 characters</li>
+                    <li id="pc2">Password must contain one digit</li>
+                    <li id="pc3">Password must contain one small letter</li>
+                    <li id="pc4">Password must contain one capital letter</li>
+                    <li id="pc5">Password must contain one special character</li>
+                </ul>
+            </div>
+            <div class="input">
+                <label for="confirm-password"><b>Confirm Master Password</b></label>
+                <input id="vpass" type="password" placeholder="Confirm Master Password" name="confirm-password" required oninput="checkConfirmPassword()">
+                <small></small>
+            </div>
+            <button type="submit" name="submit">Sign Up</button>
+        </form>
+        <a href="\signin">Already have an account?</a>
+    </div>
+    <script src="\js\signup.js"></script>
+</body>
+</html>
