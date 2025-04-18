@@ -6,10 +6,11 @@ const path = require("path");
 const app = express();
 
 const db = mysql.createConnection({
-    host: "sql302.infinityfree.com",
-    user: "if0_38723641",
-    password: "Mark0396",
-    database: "if0_38723641_password_manager"
+    host: "buwx0payxlnpmswrj3bs-mysql.services.clever-cloud.com",
+    user: "ubl6ziutxc6iobhw",
+    password: "qoW87AbeiEpGmyPlOzRs",
+    database: "buwx0payxlnpmswrj3bs",
+    port:3306
 });
 
 db.connect((err) => {
