@@ -5,23 +5,21 @@ const path = require("path");
 
 const app = express();
 
+// ✅ Use env variables for DB connection
 const db = mysql.createConnection({
-    host: "buwx0payxlnpmswrj3bs-mysql.services.clever-cloud.com",
-    user: "ubl6ziutxc6iobhw",
-    password: "qoW87AbeiEpGmyPlOzRs",
-    database: "buwx0payxlnpmswrj3bs",
-    port: 3306,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 3306,
+    ssl: { rejectUnauthorized: false }
 });
-
 
 db.connect((err) => {
     if (err) {
-        console.error("Database connection failed:", err);
+        console.error("❌ Database connection failed:", err);
     } else {
-        console.log("MySQL Connected");
+        console.log("✅ MySQL Connected");
         createTablesIfNotExist();
     }
 });
@@ -52,13 +50,13 @@ function createTablesIfNotExist() {
     `;
 
     db.query(createUsersTable, (err) => {
-        if (err) console.error("Error creating 'users' table:", err);
-        else console.log("'users' table ready ✅");
+        if (err) console.error("❌ Error creating 'users' table:", err);
+        else console.log("✅ 'users' table ready");
     });
 
     db.query(createPasswordsTable, (err) => {
-        if (err) console.error("Error creating 'passwords' table:", err);
-        else console.log("'passwords' table ready ✅");
+        if (err) console.error("❌ Error creating 'passwords' table:", err);
+        else console.log("✅ 'passwords' table ready");
     });
 }
 
@@ -72,26 +70,21 @@ app.use(session({
 }));
 
 function isAuthenticated(req, res, next) {
-    if (req.session.user) {
-        return next();
-    } else {
-        return res.redirect("/signin");
-    }
+    if (req.session.user) return next();
+    return res.redirect("/signin");
 }
 
 function xorEncryptDecrypt(input, key) {
     let output = '';
-    const n = key.length;
     for (let i = 0; i < input.length; i++) {
-        const encryptedChar = input.charCodeAt(i) ^ key.charCodeAt(i % n);
-        output += String.fromCharCode(encryptedChar);
+        output += String.fromCharCode(input.charCodeAt(i) ^ key.charCodeAt(i % key.length));
     }
     return output;
 }
 
 function encrypt(pass, key) {
     const encrypted = xorEncryptDecrypt(pass, key);
-    return Buffer.from(encrypted, 'utf-8').toString('base64');
+    return Buffer.from(encrypted).toString('base64');
 }
 
 function decrypt(pass, key) {
@@ -124,7 +117,7 @@ app.post("/signin", (req, res) => {
     const sql = "SELECT * FROM users WHERE username = ? OR email = ?";
     db.query(sql, [username, username], (err, results) => {
         if (err) return res.json({ success: false, message: "Database error." });
-        if (results.length === 0 || results[0].password !== password)
+        if (!results.length || results[0].password !== password)
             return res.json({ success: false, message: "Invalid credentials" });
 
         req.session.user = results[0];
@@ -162,14 +155,12 @@ app.post("/view", isAuthenticated, (req, res) => {
     const { website } = req.body;
     const user_id = req.session.user.user_id;
     const userPassword = req.session.user.password;
-    if (!website) return res.status(400).send("Website name is required.");
 
     const sql = "SELECT website, username, password FROM passwords WHERE user_id = ? AND website = ?";
     db.query(sql, [user_id, website], (err, results) => {
         if (err) return res.status(500).send("Server error");
-        if (results.length === 0) {
+        if (!results.length)
             return res.send(`<h2>No entry found for <i>${website}</i>.</h2><a href="/view">Try Again</a>`);
-        }
 
         const { username, password } = results[0];
         const decryptedPassword = decrypt(password, userPassword);
@@ -212,5 +203,6 @@ app.post("/delete", isAuthenticated, (req, res) => {
     });
 });
 
+// ✅ Use dynamic port for Render compatibility
 const PORT = process.env.PORT || 2025;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
