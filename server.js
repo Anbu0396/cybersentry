@@ -212,4 +212,5 @@ app.post("/delete", isAuthenticated, (req, res) => {
     });
 });
 
-app.listen(2025, () => console.log("SERVER RUNNING on http://localhost:2025"));
+const PORT = process.env.PORT || 2025;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
