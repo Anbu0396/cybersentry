@@ -7,11 +7,11 @@ const app = express();
 
 // ✅ Use env variables for DB connection
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
+    host: dpg-d01qdr3uibrs73b2qn80-a,
+    user: cyber_sentry_user,
+    password: HTAU1ikpg4BfgARKB7K2cozrc4OgPY5h,
+    database: cyber_sentry,
+    port: 5432,
     ssl: { rejectUnauthorized: false }
 });
 
