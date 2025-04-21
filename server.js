@@ -23,7 +23,7 @@ db.connect()
     console.error("❌ Database connection failed:", err);
   });
 
-function createTablesIfNotExist() {
+  function createTablesIfNotExist() {
     const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
             user_id SERIAL PRIMARY KEY,
@@ -58,6 +58,7 @@ function createTablesIfNotExist() {
         else console.log("✅ 'passwords' table ready");
     });
 }
+
 
 app.use(express.static(path.join(__dirname, "Resources")));
 app.use(express.urlencoded({ extended: true }));
