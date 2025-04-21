@@ -1,9 +1,9 @@
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
-const { Pool } = require("pg");
 
 const db = new Pool({
     host: "dpg-d01qdr3uibrs73b2qn80-a",
@@ -26,7 +26,7 @@ db.connect()
 function createTablesIfNotExist() {
     const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
-            user_id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id SERIAL PRIMARY KEY,
             name VARCHAR(100),
             username VARCHAR(100) UNIQUE,
             gender VARCHAR(10),
@@ -39,7 +39,7 @@ function createTablesIfNotExist() {
 
     const createPasswordsTable = `
         CREATE TABLE IF NOT EXISTS passwords (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             user_id INT,
             website VARCHAR(255),
             username VARCHAR(255),
@@ -98,12 +98,12 @@ app.get("/signin", (req, res) => res.sendFile(path.join(__dirname, "html", "sign
 
 app.post("/signup", (req, res) => {
     const { name, user, gender, email, phone, dob, pass } = req.body;
-    const checkUser = "SELECT * FROM users WHERE username = ? OR email = ?";
+    const checkUser = "SELECT * FROM users WHERE username = $1 OR email = $2";
     db.query(checkUser, [user, email], (err, results) => {
         if (err) return res.json({ success: false, message: "Database error." });
-        if (results.length > 0) return res.json({ success: false, message: "Username or Email already exists." });
+        if (results.rows.length > 0) return res.json({ success: false, message: "Username or Email already exists." });
 
-        const sql = "INSERT INTO users (name, username, gender, email, phone, dob, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        const sql = "INSERT INTO users (name, username, gender, email, phone, dob, password) VALUES ($1, $2, $3, $4, $5, $6, $7)";
         db.query(sql, [name, user, gender, email, phone, dob, pass], (err) => {
             if (err) return res.json({ success: false, message: "Error creating account." });
             res.json({ success: true, message: "Signup successful!", redirect: "/signin" });
@@ -113,13 +113,13 @@ app.post("/signup", (req, res) => {
 
 app.post("/signin", (req, res) => {
     const { username, password } = req.body;
-    const sql = "SELECT * FROM users WHERE username = ? OR email = ?";
-    db.query(sql, [username, username], (err, results) => {
+    const sql = "SELECT * FROM users WHERE username = $1 OR email = $1";
+    db.query(sql, [username], (err, results) => {
         if (err) return res.json({ success: false, message: "Database error." });
-        if (!results.length || results[0].password !== password)
+        if (!results.rows.length || results.rows[0].password !== password)
             return res.json({ success: false, message: "Invalid credentials" });
 
-        req.session.user = results[0];
+        req.session.user = results.rows[0];
         res.json({ success: true, message: "Login successful!", redirect: "/" });
     });
 });
@@ -143,7 +143,7 @@ app.post("/new", isAuthenticated, (req, res) => {
         return res.status(400).json({ success: false, message: "Missing required fields." });
 
     const encryptedPassword = encrypt(password, userPassword);
-    const insertSQL = `INSERT INTO passwords (user_id, website, username, password) VALUES (?, ?, ?, ?)`;
+    const insertSQL = `INSERT INTO passwords (user_id, website, username, password) VALUES ($1, $2, $3, $4)`;
     db.query(insertSQL, [user_id, website, user, encryptedPassword], (err) => {
         if (err) return res.status(500).json({ success: false, message: "Failed to save password." });
         res.json({ success: true, message: "Password saved successfully!", redirect: "/mypass" });
@@ -155,13 +155,13 @@ app.post("/view", isAuthenticated, (req, res) => {
     const user_id = req.session.user.user_id;
     const userPassword = req.session.user.password;
 
-    const sql = "SELECT website, username, password FROM passwords WHERE user_id = ? AND website = ?";
+    const sql = "SELECT website, username, password FROM passwords WHERE user_id = $1 AND website = $2";
     db.query(sql, [user_id, website], (err, results) => {
         if (err) return res.status(500).send("Server error");
-        if (!results.length)
+        if (!results.rows.length)
             return res.send(`<h2>No entry found for <i>${website}</i>.</h2><a href="/view">Try Again</a>`);
 
-        const { username, password } = results[0];
+        const { username, password } = results.rows[0];
         const decryptedPassword = decrypt(password, userPassword);
         res.send(`
             <h2>Stored Credentials:</h2>
@@ -179,10 +179,10 @@ app.post("/edit", isAuthenticated, (req, res) => {
     const userPassword = req.session.user.password;
 
     const encryptedPassword = encrypt(password, userPassword);
-    const updateSQL = `UPDATE passwords SET password = ? WHERE website = ? AND user_id = ?`;
+    const updateSQL = `UPDATE passwords SET password = $1 WHERE website = $2 AND user_id = $3`;
     db.query(updateSQL, [encryptedPassword, website, user_id], (err, result) => {
         if (err) return res.status(500).json({ success: false, message: "Failed to update password." });
-        if (result.affectedRows === 0)
+        if (result.rowCount === 0)
             return res.json({ success: false, message: "No matching record found to update." });
 
         res.json({ success: true, message: "Password updated successfully!" });
@@ -192,16 +192,15 @@ app.post("/edit", isAuthenticated, (req, res) => {
 app.post("/delete", isAuthenticated, (req, res) => {
     const { website } = req.body;
     const user_id = req.session.user.user_id;
-    const deleteSQL = "DELETE FROM passwords WHERE user_id = ? AND website = ?";
+    const deleteSQL = "DELETE FROM passwords WHERE user_id = $1 AND website = $2";
     db.query(deleteSQL, [user_id, website], (err, result) => {
         if (err) return res.status(500).json({ success: false, message: "Failed to delete password." });
-        if (result.affectedRows === 0)
+        if (result.rowCount === 0)
             return res.json({ success: false, message: "No password found for the given website." });
 
         res.json({ success: true, message: "Password deleted successfully!" });
     });
 });
 
-// ✅ Use dynamic port for Render compatibility
 const PORT = process.env.PORT || 2025;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
