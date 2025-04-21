@@ -1,28 +1,27 @@
 const express = require("express");
-const mysql = require("mysql2");
 const session = require("express-session");
 const path = require("path");
 
 const app = express();
+const { Pool } = require("pg");
 
-// ✅ Use env variables for DB connection
-const db = mysql.createConnection({
-    host: dpg-d01qdr3uibrs73b2qn80-a,
-    user: cyber_sentry_user,
-    password: HTAU1ikpg4BfgARKB7K2cozrc4OgPY5h,
-    database: cyber_sentry,
+const db = new Pool({
+    host: "dpg-d01qdr3uibrs73b2qn80-a",
+    user: "cyber_sentry_user",
+    password: "HTAU1ikpg4BfgARKB7K2cozrc4OgPY5h",
+    database: "cyber_sentry",
     port: 5432,
     ssl: { rejectUnauthorized: false }
 });
 
-db.connect((err) => {
-    if (err) {
-        console.error("❌ Database connection failed:", err);
-    } else {
-        console.log("✅ MySQL Connected");
-        createTablesIfNotExist();
-    }
-});
+db.connect()
+  .then(() => {
+    console.log("✅ PostgreSQL Connected");
+    createTablesIfNotExist();
+  })
+  .catch((err) => {
+    console.error("❌ Database connection failed:", err);
+  });
 
 function createTablesIfNotExist() {
     const createUsersTable = `
