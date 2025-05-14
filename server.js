@@ -10,7 +10,7 @@ const db = mysql.createConnection({
     user: "ubl6ziutxc6iobhw",
     password: "qoW87AbeiEpGmyPlOzRs",
     database: "buwx0payxlnpmswrj3bs",
-    port:3306
+    port: 3306
 });
 
 db.connect((err) => {
@@ -23,7 +23,7 @@ db.connect((err) => {
 });
 
 function createTablesIfNotExist() {
-    const createUsersTable = 
+    const createUsersTable = `
         CREATE TABLE IF NOT EXISTS users (
             user_id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100),
@@ -33,10 +33,10 @@ function createTablesIfNotExist() {
             phone VARCHAR(15),
             dob DATE,
             password TEXT
-        );
-    ;
+        )
+    `;
 
-    const createPasswordsTable = 
+    const createPasswordsTable = `
         CREATE TABLE IF NOT EXISTS passwords (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
@@ -44,8 +44,8 @@ function createTablesIfNotExist() {
             username VARCHAR(255),
             password TEXT,
             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-        );
-    ;
+        )
+    `;
 
     db.query(createUsersTable, (err) => {
         if (err) console.error("Error creating 'users' table:", err);
@@ -147,7 +147,10 @@ app.post("/new", isAuthenticated, (req, res) => {
         return res.status(400).json({ success: false, message: "Missing required fields." });
 
     const encryptedPassword = encrypt(password, userPassword);
-    const insertSQL = INSERT INTO passwords (user_id, website, username, password) VALUES (?, ?, ?, ?);
+    const insertSQL = `
+        INSERT INTO passwords (user_id, website, username, password)
+        VALUES (?, ?, ?, ?)
+    `;
     db.query(insertSQL, [user_id, website, user, encryptedPassword], (err) => {
         if (err) return res.status(500).json({ success: false, message: "Failed to save password." });
         res.json({ success: true, message: "Password saved successfully!", redirect: "/mypass" });
@@ -164,18 +167,21 @@ app.post("/view", isAuthenticated, (req, res) => {
     db.query(sql, [user_id, website], (err, results) => {
         if (err) return res.status(500).send("Server error");
         if (results.length === 0) {
-            return res.send(<h2>No entry found for <i>${website}</i>.</h2><a href="/view">Try Again</a>);
+            return res.send(`
+                <h2>No entry found for <i>${website}</i>.</h2>
+                <a href="/view">Try Again</a>
+            `);
         }
 
         const { username, password } = results[0];
         const decryptedPassword = decrypt(password, userPassword);
-        res.send(
+        res.send(`
             <h2>Stored Credentials:</h2>
             <p><strong>Website:</strong> ${website}</p>
             <p><strong>Username:</strong> ${username}</p>
             <p><strong>Password:</strong> ${decryptedPassword}</p>
             <br><a href="/view">View Another</a>
-        );
+        `);
     });
 });
 
@@ -185,7 +191,9 @@ app.post("/edit", isAuthenticated, (req, res) => {
     const userPassword = req.session.user.password;
 
     const encryptedPassword = encrypt(password, userPassword);
-    const updateSQL = UPDATE passwords SET password = ? WHERE website = ? AND user_id = ?;
+    const updateSQL = `
+        UPDATE passwords SET password = ? WHERE website = ? AND user_id = ?
+    `;
     db.query(updateSQL, [encryptedPassword, website, user_id], (err, result) => {
         if (err) return res.status(500).json({ success: false, message: "Failed to update password." });
         if (result.affectedRows === 0)
@@ -208,4 +216,4 @@ app.post("/delete", isAuthenticated, (req, res) => {
     });
 });
 
-app.listen(2025, () => console.log("SERVER RUNNING on http://localhost:2025"));
+app.listen(2025, () => console.log("SERVER RUNNING on https://cybersentry-lrvx.onrender.com/"));
